@@ -47,40 +47,47 @@ class PactRepository {
       '${consumer}|${provider}';
 
   static Pact _createHeader(PactBuilder builder) {
-    return Pact()
-      ..provider = (Provider()..name = builder.provider)
-      ..consumer = (Consumer()..name = builder.consumer);
+    return Pact(
+      provider: Provider(name: builder.provider),
+      consumer: Consumer(name: builder.consumer),
+    );
   }
 
   static void _mergeInteractions(PactBuilder builder, Pact contract) {
     final interactions = builder.stateBuilders.expand(
         (st) => st.requests.map((req) => _toInteraction(req, st.state)));
-    contract.interactions.addAll(interactions);
+
+    if (interactions.isNotEmpty && contract.interactions != null) {
+      contract.interactions!.addAll(interactions);
+    }
   }
 
   static Interaction _toInteraction(
-      RequestBuilder requestBuilder, String state) {
-    return Interaction()
-      ..description = requestBuilder.description
-      ..providerStates = [ProviderState()..name = state]
-      ..request = (_toRequest(requestBuilder))
-      ..response = (_toResponse(requestBuilder.response));
+      RequestBuilder requestBuilder, String? state) {
+    return Interaction(
+      description: requestBuilder.description,
+      // RESEARCH: Where are the params and multiple states gonna come from?
+      providerStates: state == null ? [] : [ProviderState(name: state)],
+      request: (_toRequest(requestBuilder)),
+      response: (_toResponse(requestBuilder.response)),
+    );
   }
 
   static Request _toRequest(RequestBuilder requestBuilder) {
-    return Request()
-      ..method = _toMethod(requestBuilder.method)
-      ..path = requestBuilder.path
-      ..query = requestBuilder.query
-      ..body = requestBuilder.body
-      ..headers = requestBuilder.headers;
+    return Request(
+        method: _toMethod(requestBuilder.method),
+        path: requestBuilder.path,
+        query: requestBuilder.query,
+        body: requestBuilder.body,
+        headers: requestBuilder.headers);
   }
 
   static Response _toResponse(ResponseBuilder response) {
-    return Response()
-      ..headers = response.headers
-      ..status = response.status.code
-      ..body = response.body;
+    return Response(
+      headers: response.headers,
+      status: response.status.code,
+      body: response.body,
+    );
   }
 
   static String _toMethod(Method method) {
@@ -92,18 +99,21 @@ class PactRepository {
 typedef RequestTestFunction = Future<dynamic> Function(MockServer server);
 
 class RequestTester {
+  final PactBuilder _pactBuilder;
   final StateBuilder _stateBuilder;
 
   // todo shouldn't be static
   static bool hasErrors = false;
 
-  RequestTester._(this._stateBuilder);
+  RequestTester._(this._pactBuilder, this._stateBuilder);
 
   void test(MockServerFactory factory, RequestTestFunction testFunction) async {
-    final pactBuilder = PactBuilder()..stateBuilders.add(_stateBuilder);
+    final pactBuilder = PactBuilder(
+        consumer: _pactBuilder.consumer, provider: _pactBuilder.provider)
+      ..stateBuilders.add(_stateBuilder);
     final pact = PactRepository._createHeader(pactBuilder);
     PactRepository._mergeInteractions(pactBuilder, pact);
-    final server = factory.createMockServer(pact.interactions[0]);
+    final server = factory.createMockServer(pact.interactions![0]);
     try {
       await testFunction(server);
       _stateBuilder._tested = true;
@@ -134,23 +144,25 @@ class RequestTester {
 class PactBuilder {
   String consumer;
   String provider;
+
   final List<StateBuilder> _states = [];
 
-  PactBuilder();
-
   List<StateBuilder> get stateBuilders => _states;
+
+  PactBuilder({
+    required this.consumer,
+    required this.provider,
+  });
 
   // builder functions allow to change internals in the future
   RequestTester addState(void Function(StateBuilder stateBuilder) func) {
     final builder = StateBuilder._();
     func(builder);
     _states.add(builder);
-    return RequestTester._(builder);
+    return RequestTester._(this, builder);
   }
 
   void validate({bool requireTests = true}) {
-    assert(consumer != null);
-    assert(provider != null);
     stateBuilders.forEach((element) => element._validate(requireTests));
   }
 }
@@ -158,18 +170,14 @@ class PactBuilder {
 enum Method { GET, POST, DELETE, PUT }
 
 class StateBuilder {
-  String state;
   bool _tested = false;
+  String? state;
+  List<RequestBuilder> requests = [];
 
-  final List<RequestBuilder> requests = [];
+  StateBuilder._();
 
   void _validate(bool requireTests) {
     assert(state != null);
-    assert(requests != null);
-    assert(requests.isNotEmpty);
-    if (requireTests && !_tested) {
-      throw PactException('State "$state" not tested');
-    }
     requests.forEach((element) => element._validate());
   }
 
@@ -178,8 +186,6 @@ class StateBuilder {
     func(builder);
     requests.add(builder);
   }
-
-  StateBuilder._();
 }
 
 class RequestBuilder {
@@ -197,14 +203,17 @@ class RequestBuilder {
 
   String description = '';
   Method method = Method.GET;
-  ResponseBuilder _response;
+  ResponseBuilder? _response;
+  Map<String, String>? query;
+  Map<String, String>? headers;
+  Body? body;
 
-  Map<String, String> query = {};
+  ResponseBuilder get response {
+    assert(_response != null);
+    return _response!;
+  }
 
-  ResponseBuilder get response => _response;
-  Body body = Body.isNullOrAbsent();
-
-  Map<String, String> headers = {};
+  RequestBuilder._();
 
   void setResponse(void Function(ResponseBuilder respBuilder) func) {
     final builder = ResponseBuilder._();
@@ -213,31 +222,14 @@ class RequestBuilder {
   }
 
   void _validate() {
-    assert(_path != null);
-    assert(_path != '');
-    assert(query != null);
-    assert(method != null);
     assert(_response != null);
-    assert(body != null);
-    assert(headers != null);
-    _response._validate();
   }
-
-  RequestBuilder._();
 }
 
 class ResponseBuilder {
-  Map<String, String> headers = {};
-
+  Map<String, String>? headers;
   Status status = Status(200);
-
-  Body body = Body.empty();
-
-  void _validate() {
-    assert(headers != null);
-    assert(status != null);
-    assert(body != null);
-  }
+  Body? body;
 
   ResponseBuilder._();
 }

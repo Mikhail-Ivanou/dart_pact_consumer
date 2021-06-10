@@ -15,9 +15,10 @@ void main() async {
     final repo = PactRepository();
 
     PactBuilder petShopApiBuilder() {
-      return PactBuilder()
-        ..consumer = 'dart-consumer'
-        ..provider = 'pet-shop-api-provider';
+      return PactBuilder(
+        consumer: 'dart-consumer',
+        provider: 'pet-shop-api-provider',
+      );
     }
 
     test('should get pet list', () async {
@@ -49,17 +50,17 @@ void main() async {
     test('should get pet filtered', () async {
       final builder = petShopApiBuilder();
       final tester = builder.addState((st) => st
-          ..state = 'pet shop with 3 pets'
-          ..addRequest((req) => req
-            ..description = 'should get only Bob'
-            ..method = Method.GET
-            ..path = '/pets'
-            ..query = {'name': 'Bob'}
-            ..setResponse((resp) => resp
-              ..status = Status(200)
-              ..body = Body.json(Json.array([
-                Json.object({'id': 3, 'name': 'Bob', 'kind': 'Dog'})
-              ])))));
+        ..state = 'pet shop with 3 pets'
+        ..addRequest((req) => req
+          ..description = 'should get only Bob'
+          ..method = Method.GET
+          ..path = '/pets'
+          ..query = {'name': 'Bob'}
+          ..setResponse((resp) => resp
+            ..status = Status(200)
+            ..body = Body.json(Json.array([
+              Json.object({'id': 3, 'name': 'Bob', 'kind': 'Dog'})
+            ])))));
 
       await tester.test(serverFactory, (server) async {
         final response = await server.invoke('/pets?name=Bob');
@@ -78,7 +79,6 @@ void main() async {
       await repo.publish(host, '0.0.1');
     });
   });
-
 }
 
 extension JsonResponse on HttpClientResponse {
