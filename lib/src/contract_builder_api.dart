@@ -163,7 +163,7 @@ class PactBuilder {
   }
 
   void validate({bool requireTests = true}) {
-    stateBuilders.forEach((element) => element._validate(requireTests));
+    stateBuilders.forEach((element) => element._validate());
   }
 }
 
@@ -176,8 +176,7 @@ class StateBuilder {
 
   StateBuilder._();
 
-  void _validate(bool requireTests) {
-    assert(state != null);
+  void _validate() {
     requests.forEach((element) => element._validate());
   }
 
