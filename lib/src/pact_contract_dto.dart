@@ -7,11 +7,11 @@ part 'pact_contract_dto.g.dart';
 // formal specification
 // https://github.com/pact-foundation/pact-specification/tree/version-3
 
-@JsonSerializable(includeIfNull: false)
+@JsonSerializable(includeIfNull: true)
 class Pact {
   Provider provider;
   Consumer consumer;
-  List<Interaction>? interactions;
+  List<Interaction>? interactions = [];
   Metadata metadata = Metadata();
 
   Pact({
@@ -28,10 +28,10 @@ class Pact {
 
 @JsonSerializable(includeIfNull: false)
 class Metadata {
-  final Map<String, String> pactSpecification;
-
   @JsonKey(name: 'pact-dart')
   final Map<String, String> pactDart;
+
+  final Map<String, String> pactSpecification;
 
   const Metadata({
     this.pactDart = const {'version': '1.1.0'},
@@ -44,11 +44,11 @@ class Metadata {
   Map<String, dynamic> toJson() => _$MetadataToJson(this);
 }
 
-@JsonSerializable(includeIfNull: false)
+@JsonSerializable(includeIfNull: true)
 class Interaction {
+  String? description;
   Request request;
   Response response;
-  String? description;
   List<ProviderState>? providerStates;
 
   Interaction({

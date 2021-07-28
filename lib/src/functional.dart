@@ -93,7 +93,7 @@ extension ScopeFunctions<T> on T {
   /// Preforms an operation on a possible null input.
   ///
   /// The operation function is only executed on non null cases.
-  R let<R>(R Function(T value) func) {
+  R? let<R>(R Function(T value) func) {
     if (this == null) {
       return null;
     }

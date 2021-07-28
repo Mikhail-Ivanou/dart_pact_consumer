@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 String _getDownloadLink() {
@@ -12,8 +11,10 @@ String _getDownloadLink() {
   throw Exception('Unsupported platform: ${Platform.operatingSystem}');
 }
 
-final _finalPath = Directory.systemTemp.path + '/libpact_mock_server_ffi-v0.0.17';
-final _downloadPath = Directory.systemTemp.path + '/libpact_mock_server_ffi-v0.0.17.gz';
+final _finalPath =
+    Directory.systemTemp.path + '/libpact_mock_server_ffi-v0.0.17';
+final _downloadPath =
+    Directory.systemTemp.path + '/libpact_mock_server_ffi-v0.0.17.gz';
 
 Future<String> downloadFromGithub() async {
   if (await File(_finalPath).exists()) {
@@ -25,16 +26,16 @@ Future<String> downloadFromGithub() async {
   return _finalPath;
 }
 
-void _unzip() async {
+Future<void> _unzip() async {
   print('Decompressing file $_downloadPath');
   var bytes = await File(_downloadPath).readAsBytes();
   var decoded = gzip.decode(bytes);
   var writeStream = File(_finalPath).openWrite();
-  await writeStream.add(decoded);
+  writeStream.add(decoded);
   await writeStream.close();
 }
 
-void _download() async {
+Future<void> _download() async {
   var file = File(_downloadPath);
   if (await file.exists()) {
     print('GZ file exists');

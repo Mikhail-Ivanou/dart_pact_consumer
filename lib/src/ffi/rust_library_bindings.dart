@@ -34,16 +34,8 @@ class _BooleanBridge {
   int toNative(bool input) => input ? 1 : 0;
 }
 
-extension _StringExt on String {
-  Pointer<Utf8> toNative() {
-    return Utf8.toUtf8(this);
-  }
-}
-
 extension _Utf8PointerExt on Pointer<Utf8> {
-  String toDartString() => ref.toString();
-
-  bool isNull() => this == null || this == nullptr;
+  bool isNull() => this == nullptr;
 }
 
 /// Opens the shared library given a local path.
@@ -67,7 +59,7 @@ void _init(DynamicLibrary lib, String envLogVariable) {
   // todo functions can be cached for the same lib instance
   // see DynamicLibrary.open docs
   final initFunc = lib.lookupFunction<_initNative, _initDart>('init');
-  initFunc(envLogVariable.toNative());
+  initFunc(envLogVariable.toNativeUtf8());
 }
 
 typedef _createMockServerNative = Int32 Function(
@@ -86,14 +78,13 @@ typedef _createMockServerDart = int Function(
 /// [Docs](https://docs.rs/pact_mock_server_ffi/0.0.17/pact_mock_server_ffi/fn.create_mock_server.html)
 int createMockServer(DynamicLibrary lib, String jsonPact,
     {String host = '127.0.0.1', int port = 0, bool useTls = false}) {
-  port ??= 0;
   assert(port >= 0, 'Invalid port');
   final createMockServerFunc =
       lib.lookupFunction<_createMockServerNative, _createMockServerDart>(
           'create_mock_server');
   final createResult = createMockServerFunc(
-      jsonPact.toNative(),
-      '$host:$port'.toNative(), // 0 leaves port handling to OS
+      jsonPact.toNativeUtf8(),
+      '$host:$port'.toNativeUtf8(), // 0 leaves port handling to OS
       _booleanBridge.toNative(useTls));
   switch (createResult) {
     case -1:
@@ -162,8 +153,8 @@ bool cleanup(DynamicLibrary lib, int port) {
   return _booleanBridge.fromNative(cleanupMockServerFunc(port));
 }
 
-void writePactFile(DynamicLibrary lib, int port, {String directory}) {
-  final dirNative = directory == null ? nullptr : directory.toNative();
+void writePactFile(DynamicLibrary lib, int port, {required String directory}) {
+  final dirNative = directory.toNativeUtf8();
   var func = lib.lookupFunction<
       Int32 Function(Int32 port, Pointer<Utf8> directory),
       int Function(int port, Pointer<Utf8> directory)>('write_pact_file');
@@ -177,7 +168,8 @@ void writePactFile(DynamicLibrary lib, int port, {String directory}) {
     case 2:
       throw PactFfiException('The pact file was not able to be written');
     case 3:
-      throw PactFfiException('A mock server with the provided port was not found');
+      throw PactFfiException(
+          'A mock server with the provided port was not found');
     default:
       throw PactFfiException('Unknown result $writeResult');
   }

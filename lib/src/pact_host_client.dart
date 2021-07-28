@@ -26,7 +26,7 @@ class PactHost {
   }
 
   String _pactUrl(String provider, String consumer) {
-    return '$_hostUri/pacts/provider/${provider}/consumer/' '${consumer}';
+    return '$_hostUri/pacts/provider/$provider/consumer/' '$consumer';
   }
 
   String _participantUrl(String participant) {

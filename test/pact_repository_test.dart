@@ -13,11 +13,10 @@ void main() {
       var pactFile = PactRepository().getPactFile('consumer', 'provider');
       expect(pactFile, isNull);
     });
-    
+
     test('should get pact based on consumer and provider', () {
       var builder = simpleBuilder();
-      var pactRepository = PactRepository(requireTests: false)
-        ..add(builder);
+      var pactRepository = PactRepository(requireTests: false)..add(builder);
       var pactFile = pactRepository.getPactFile('consumer', 'provider');
       expect(pactFile, isNotEmpty);
     });
@@ -25,16 +24,16 @@ void main() {
 }
 
 PactBuilder simpleBuilder() {
-  return PactBuilder()
-      ..consumer = 'consumer'
-      ..provider = 'provider'
-      ..addState((stateBuilder) {
-        stateBuilder
-          ..state = 'my state'
-          ..addRequest((reqBuilder) {
-            reqBuilder.setResponse((respBuilder) {});
-          });
-      });
+  return PactBuilder(
+    consumer: 'consumer',
+    provider: 'provider',
+  )..addState((stateBuilder) {
+      stateBuilder
+        ..state = 'my state'
+        ..addRequest((reqBuilder) {
+          reqBuilder.setResponse((respBuilder) {});
+        });
+    });
 }
 
 final throwsPactException = throwsA(isA<PactException>());

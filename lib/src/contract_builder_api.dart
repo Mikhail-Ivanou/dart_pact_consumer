@@ -37,14 +37,13 @@ class PactRepository {
   }
 
   /// Gets a pact file in JSON format
-  String getPactFile(String consumer, String provider) {
+  String? getPactFile(String consumer, String provider) {
     return _pacts[_key(consumer, provider)].let((value) {
       return jsonEncode(value);
     });
   }
 
-  static String _key(String consumer, String provider) =>
-      '${consumer}|${provider}';
+  static String _key(String consumer, String provider) => '$consumer|$provider';
 
   static Pact _createHeader(PactBuilder builder) {
     return Pact(
@@ -57,7 +56,9 @@ class PactRepository {
     final interactions = builder.stateBuilders.expand(
         (st) => st.requests.map((req) => _toInteraction(req, st.state)));
 
-    if (interactions.isNotEmpty && contract.interactions != null) {
+    if (interactions.isNotEmpty && contract.interactions == null) {
+      contract.interactions = interactions.toList();
+    } else if (interactions.isNotEmpty && contract.interactions != null) {
       contract.interactions!.addAll(interactions);
     }
   }
@@ -73,7 +74,7 @@ class PactRepository {
     );
   }
 
-  Request _toRequest(RequestBuilder requestBuilder) {
+  static Request _toRequest(RequestBuilder requestBuilder) {
     final query = Uri(queryParameters: requestBuilder.query).query;
     final decodedQuery = Uri.decodeComponent(query);
     return Request(
@@ -110,7 +111,8 @@ class RequestTester {
 
   RequestTester._(this._pactBuilder, this._stateBuilder);
 
-  void test(MockServerFactory factory, RequestTestFunction testFunction) async {
+  Future<void> test(
+      MockServerFactory factory, RequestTestFunction testFunction) async {
     final pactBuilder = PactBuilder(
         consumer: _pactBuilder.consumer, provider: _pactBuilder.provider)
       ..stateBuilders.add(_stateBuilder);
@@ -145,9 +147,8 @@ class RequestTester {
 /// . Generators
 /// . Encoders
 class PactBuilder {
-  String consumer;
-  String provider;
-
+  String consumer = '';
+  String provider = '';
   final List<StateBuilder> _states = [];
 
   List<StateBuilder> get stateBuilders => _states;
@@ -166,7 +167,7 @@ class PactBuilder {
   }
 
   void validate({bool requireTests = true}) {
-    stateBuilders.forEach((element) => element._validate());
+    stateBuilders.forEach((element) => element._validate(requireTests));
   }
 }
 
@@ -179,7 +180,11 @@ class StateBuilder {
 
   StateBuilder._();
 
-  void _validate() {
+  void _validate(bool requireTests) {
+    if (requireTests && !_tested) {
+      throw PactException('State "$state" not tested');
+    }
+    requests.forEach((element) => element._validate());
     requests.forEach((element) => element._validate());
   }
 
