@@ -6,16 +6,16 @@ part of 'pact.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Pact _$PactFromJson(Map<String, dynamic> json) {
-  return Pact(
-    provider: Provider.fromJson(json['provider'] as Map<String, dynamic>),
-    consumer: Consumer.fromJson(json['consumer'] as Map<String, dynamic>),
-    interactions: (json['interactions'] as List<dynamic>?)
-        ?.map((e) => Interaction.fromJson(e as Map<String, dynamic>))
-        .toList(),
-    metadata: Metadata.fromJson(json['metadata'] as Map<String, dynamic>),
-  );
-}
+Pact _$PactFromJson(Map<String, dynamic> json) => Pact(
+      provider: Provider.fromJson(json['provider'] as Map<String, dynamic>),
+      consumer: Consumer.fromJson(json['consumer'] as Map<String, dynamic>),
+      interactions: (json['interactions'] as List<dynamic>?)
+          ?.map((e) => Interaction.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      metadata: json['metadata'] == null
+          ? const Metadata()
+          : Metadata.fromJson(json['metadata'] as Map<String, dynamic>),
+    );
 
 Map<String, dynamic> _$PactToJson(Pact instance) {
   final val = <String, dynamic>{

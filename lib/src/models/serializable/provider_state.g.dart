@@ -6,12 +6,11 @@ part of 'provider_state.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-ProviderState _$ProviderStateFromJson(Map<String, dynamic> json) {
-  return ProviderState(
-    name: json['name'] as String,
-    params: json['params'] as Map<String, dynamic>?,
-  );
-}
+ProviderState _$ProviderStateFromJson(Map<String, dynamic> json) =>
+    ProviderState(
+      name: json['name'] as String,
+      params: json['params'] as Map<String, dynamic>?,
+    );
 
 Map<String, dynamic> _$ProviderStateToJson(ProviderState instance) {
   final val = <String, dynamic>{

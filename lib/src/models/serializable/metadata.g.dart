@@ -6,13 +6,17 @@ part of 'metadata.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Metadata _$MetadataFromJson(Map<String, dynamic> json) {
-  return Metadata(
-    pactDart: Map<String, String>.from(json['pact-dart'] as Map),
-    pactSpecification:
-        Map<String, String>.from(json['pactSpecification'] as Map),
-  );
-}
+Metadata _$MetadataFromJson(Map<String, dynamic> json) => Metadata(
+      pactDart: (json['pact-dart'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, e as String),
+          ) ??
+          const {'version': '1.3.0'},
+      pactSpecification:
+          (json['pactSpecification'] as Map<String, dynamic>?)?.map(
+                (k, e) => MapEntry(k, e as String),
+              ) ??
+              const {'version': '3.0.0'},
+    );
 
 Map<String, dynamic> _$MetadataToJson(Metadata instance) => <String, dynamic>{
       'pactSpecification': instance.pactSpecification,
