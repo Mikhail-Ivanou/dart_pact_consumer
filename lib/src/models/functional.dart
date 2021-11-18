@@ -61,7 +61,6 @@ class Unit implements CustomJson {
 
 /// Ensures lazy initialization of non nullable values
 class Lazy<T> {
-
   T? _value;
   final T Function() _producer;
 
@@ -72,5 +71,16 @@ class Lazy<T> {
     assert(_value != null);
     return _value!;
   }
+}
 
+extension ScopeFunctions<T> on T {
+  /// Preforms an operation on a possible null input.
+  ///
+  /// The operation function is only executed on non null cases.
+  R? let<R>(R Function(T value) func) {
+    if (this == null) {
+      return null;
+    }
+    return func(this);
+  }
 }
