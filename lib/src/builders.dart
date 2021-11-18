@@ -2,9 +2,6 @@ import 'dart:convert';
 
 import 'package:dart_pact_consumer/dart_pact_consumer.dart';
 import 'package:dart_pact_consumer/src/ffi/rust_mock_server.dart';
-import 'package:dart_pact_consumer/src/functional.dart';
-import 'package:dart_pact_consumer/src/json_serialize.dart';
-import 'package:dart_pact_consumer/src/pact_contract_dto.dart';
 import 'package:dart_pact_consumer/src/pact_host_client.dart';
 
 import 'pact_exceptions.dart';
@@ -38,7 +35,7 @@ class PactRepository {
 
   /// Gets a pact file in JSON format
   String? getPactFile(String consumer, String provider) {
-    return _pacts[_key(consumer, provider)].let((value) {
+    return _pacts[_key(consumer, provider)]?.let((value) {
       return jsonEncode(value);
     });
   }
@@ -54,7 +51,7 @@ class PactRepository {
 
   static void _mergeInteractions(PactBuilder builder, Pact contract) {
     final interactions = builder.stateBuilders.expand(
-            (st) => st.requests.map((req) => _toInteraction(req, st.state)));
+        (st) => st.requests.map((req) => _toInteraction(req, st.state)));
 
     if (interactions.isNotEmpty && contract.interactions == null) {
       contract.interactions = interactions.toList();
@@ -239,87 +236,4 @@ class ResponseBuilder {
   Body? body;
 
   ResponseBuilder._();
-}
-
-// https://github.com/pact-foundation/pact-specification/tree/version-3#semantics-around-body-values
-/// Models a request/response body.
-class Body extends Union3<Json, String, Unit> implements CustomJson {
-  /// Body must be a Json object
-  Body.json(Json json) : super.t1(json);
-
-  /// Body must be a string
-  Body.string(String str)
-      : assert(str.isNotEmpty),
-        super.t2(str);
-
-  /// Body must be empty
-  Body.empty() : super.t2('');
-
-  /// Body is explicitly null or is absent.
-  ///
-  /// [Doc](https://github.com/pact-foundation/pact-specification/tree/version-3#body-is-present-but-is-null)
-  Body.isNullOrAbsent() : super.t3(unit);
-
-  @override
-  dynamic toJson() {
-    return fold(
-          (js) => js.toJson(),
-          (str) => str,
-          (unit) => unit.toJson(),
-    );
-  }
-
-  static Body fromJsonToBody(dynamic body) {
-    if (body == null) {
-      return Body.isNullOrAbsent();
-    }
-
-    if (body == '') {
-      return Body.empty();
-    }
-
-    if (body is String) {
-      return Body.string(body);
-    }
-
-    if (body is Map<String, dynamic>) {
-      return Body.json(Json.object(body));
-    }
-
-    if (body is Iterable<dynamic>) {
-      return Body.json(Json.array(body));
-    }
-    throw AssertionError('Unknown body type ${body.runtimeType}');
-  }
-}
-
-/// Models a Json object.
-///
-/// The definition is relaxed to dynamic to allow more flexibility. No need
-/// to create unions for every valid Json type.
-///
-/// Designed to work with custom Json objects or to interoperate with
-/// classes that comply with the Json serialization conventions.
-class Json extends Union2<Iterable<dynamic>, Map<String, dynamic>>
-    implements CustomJson {
-  Json.object(Map<String, dynamic> json) : super.t2(json);
-
-  Json.array(Iterable<dynamic> json) : super.t1(json);
-
-  @override
-  dynamic toJson() {
-    return fold(
-          (arr) => arr,
-          (obj) => obj,
-    );
-  }
-}
-
-class Status {
-  final int code;
-
-  static final Status ok = Status(200);
-  static final Status created = Status(201);
-
-  Status(this.code) : assert(code >= 100 && code <= 599);
 }

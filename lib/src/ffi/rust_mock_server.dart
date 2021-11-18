@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:dart_pact_consumer/dart_pact_consumer.dart';
 
 import '../pact_exceptions.dart';
-import '../functional.dart';
 import 'rust_library_bindings.dart' as bindings;
 
 final _default_lib_path =

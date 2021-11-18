@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dart_pact_consumer/src/functional.dart';
-import 'package:dart_pact_consumer/src/pact_contract_dto.dart';
+import 'models/all.dart';
 
 class PactHost {
   final String _hostUri;
