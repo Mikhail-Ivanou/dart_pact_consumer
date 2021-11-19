@@ -80,6 +80,7 @@ class PactRepository {
       query: decodedQuery,
       body: requestBuilder.body,
       headers: requestBuilder.headers,
+      matchingRules: requestBuilder.matchingRules,
     );
   }
 
@@ -88,6 +89,7 @@ class PactRepository {
       headers: response.headers,
       status: response.status.code,
       body: response.body,
+      matchingRules: response.matchingRules,
     );
   }
 
@@ -193,24 +195,14 @@ class StateBuilder {
 }
 
 class RequestBuilder {
-  String _path = '/';
-
-  String get path => _path;
-
-  set path(String path) {
-    if (path.startsWith('/')) {
-      _path = path;
-    } else {
-      _path = '/$path';
-    }
-  }
-
-  String description = '';
+  String? path;
+  String? description = '';
   Method method = Method.GET;
   ResponseBuilder? _response;
   Map<String, String>? query;
   Map<String, String>? headers;
   Body? body;
+  MatchingRules? matchingRules;
 
   ResponseBuilder get response {
     assert(_response != null);
@@ -219,13 +211,14 @@ class RequestBuilder {
 
   RequestBuilder._();
 
-  void setResponse(void Function(ResponseBuilder respBuilder) func) {
+  void setResponse(void Function(ResponseBuilder builder) func) {
     final builder = ResponseBuilder._();
     func(builder);
     _response = builder;
   }
 
   void _validate() {
+    assert(path != null);
     assert(_response != null);
   }
 }
@@ -234,6 +227,7 @@ class ResponseBuilder {
   Map<String, String>? headers;
   Status status = Status(200);
   Body? body;
+  MatchingRules? matchingRules;
 
   ResponseBuilder._();
 }
