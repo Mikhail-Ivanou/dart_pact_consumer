@@ -11,13 +11,13 @@ class Interaction {
   Request request;
   Response response;
   String? description;
-  ProviderState providerStates;
+  String? providerState;
 
   Interaction({
     required this.request,
     required this.response,
     this.description,
-    required this.providerStates,
+    this.providerState,
   });
 
   factory Interaction.fromJson(Map<String, dynamic> json) =>
