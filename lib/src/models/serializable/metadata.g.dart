@@ -15,7 +15,7 @@ Metadata _$MetadataFromJson(Map<String, dynamic> json) => Metadata(
           (json['pactSpecification'] as Map<String, dynamic>?)?.map(
                 (k, e) => MapEntry(k, e as String),
               ) ??
-              const {'version': '3.0.0'},
+              const {'version': '2.0.0'},
     );
 
 Map<String, dynamic> _$MetadataToJson(Metadata instance) => <String, dynamic>{

@@ -65,7 +65,7 @@ class PactRepository {
     return Interaction(
       description: requestBuilder.description,
       // RESEARCH: Where are the params and multiple states gonna come from?
-      providerStates: state == null ? [] : [ProviderState(name: state)],
+      providerStates: state == null ? null : ProviderState(name: state),
       request: (_toRequest(requestBuilder)),
       response: (_toResponse(requestBuilder.response)),
     );

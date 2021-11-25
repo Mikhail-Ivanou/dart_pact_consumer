@@ -10,10 +10,8 @@ Interaction _$InteractionFromJson(Map<String, dynamic> json) => Interaction(
       request: Request.fromJson(json['request'] as Map<String, dynamic>),
       response: Response.fromJson(json['response'] as Map<String, dynamic>),
       description: json['description'] as String?,
-      providerStates: (json['providerStates'] as List<dynamic>?)
-              ?.map((e) => ProviderState.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
+      providerStates: ProviderState.fromJson(
+          json['providerStates'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$InteractionToJson(Interaction instance) {
@@ -29,6 +27,6 @@ Map<String, dynamic> _$InteractionToJson(Interaction instance) {
   }
 
   writeNotNull('description', instance.description);
-  writeNotNull('providerStates', instance.providerStates);
+  val['providerStates'] = instance.providerStates;
   return val;
 }

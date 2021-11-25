@@ -16,7 +16,7 @@ void main() {
         interactions: [
           Interaction(
             description: 'my description',
-            providerStates: [ProviderState(name: 'my state')],
+            providerStates: ProviderState(name: 'my state'),
             request: Request(
               method: 'GET',
               path: 'my/path',
