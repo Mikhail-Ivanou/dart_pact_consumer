@@ -11,7 +11,7 @@ class Metadata {
 
   const Metadata({
     this.pactDart = const {'version': '1.3.0'},
-    this.pactSpecification = const {'version': '3.0.0'},
+    this.pactSpecification = const {'version': '2.0.0'},
   });
 
   factory Metadata.fromJson(Map<String, dynamic> json) =>
